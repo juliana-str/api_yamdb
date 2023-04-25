@@ -20,8 +20,8 @@ class Category(models.Model):
 
 class Genre(models.Model):
     """Модель просмотра, создания и удаления жанров произведений."""
-    name = models.CharField(max_length=50)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(unique=True, max_length=50)
 
     def __str__(self):
         return self.name
@@ -42,7 +42,7 @@ class Title(models.Model):
     )
     name = models.CharField(max_length=50)
     year = models.IntegerField()
-    rating = models.IntegerField()
+    rating = models.IntegerField(default='None')
     description = models.CharField(max_length=200)
 
 

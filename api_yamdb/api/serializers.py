@@ -1,4 +1,6 @@
 import datetime
+from typing import re
+
 from rest_framework import serializers
 
 from reviews.models import Category, Comment, Genre, Review, User
@@ -48,6 +50,13 @@ class GenreSerializer(serializers.ModelSerializer):
         queryset=Genre.objects.all()
     )
 
+    def validate_slug(self):
+        slug = self.genre
+        if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
+            raise serializers.ValidationError(
+                'Неверный слаг!')
+        return slug
+
     class Meta:
         read_only_fields = '__all__'
         model = Genre
@@ -89,12 +98,20 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='username'
     )
+    score = serializers.IntegerField()
 
     def validate_review(self, data):
         """Проверка повторного ревью."""
         if self.context['request'].user == data:
             raise serializers.ValidationError(
                 'Вы уже оставили ревью!')
+        return data
+
+    def validate_score(self, data):
+        """Проверка оценки."""
+        if not 0 < data < 11:
+            raise serializers.ValidationError(
+                'Оценка должна быть от 1 до 10!')
         return data
 
     class Meta:

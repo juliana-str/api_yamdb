@@ -27,7 +27,7 @@ class CategoryViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления категории."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (ReadOnly, IsAdminUser, )
+    permission_classes = (ReadOnly, IsAdminUser,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     search_fields = ('name',)
 
