@@ -27,7 +27,7 @@ class CategoryViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления категории."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (ReadOnly, IsAdminUser,)
+    permission_classes = (ReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     search_fields = ('name',)
 
@@ -36,7 +36,7 @@ class GenreViewSet(ModelViewSet):
     """Вьюсет для просмотра жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (ReadOnly, IsAdminUser,)
+    permission_classes = (ReadOnly, )
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     search_fields = ('name',)
 
@@ -75,9 +75,7 @@ class ReviewViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания ревью на произведения."""
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,
-                          IsOwnerOrReadOnly,
-                          IsAdminUser,
-                          ModeratorUser)
+                          )
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     search_fields = ('title_id',)
 
@@ -90,10 +88,11 @@ class ReviewViewSet(ModelViewSet):
         serializer.save(author=self.request.user,
                         pk=self.kwargs.get('review_id'))
 
+
 class TitleViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления категории."""
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (ReadOnly, IsAdminUser,)
+    permission_classes = (ReadOnly, )
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     search_fields = ('category', 'name', 'genre', 'year',)
