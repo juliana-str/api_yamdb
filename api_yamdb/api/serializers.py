@@ -1,5 +1,5 @@
 import datetime
-from typing import re
+import re
 
 from rest_framework import serializers
 
@@ -30,19 +30,6 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
 
 
-class CommentSerializer(serializers.ModelSerializer):
-    """Сериалайзер для комментариев."""
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
-
-    class Meta:
-        fields = '__all__'
-        read_only_fields = ('review', 'author')
-        model = Comment
-
-
 class GenreSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели жанры."""
     genre = serializers.SlugRelatedField(
@@ -51,8 +38,8 @@ class GenreSerializer(serializers.ModelSerializer):
     )
 
     def validate_slug(self):
-        slug = self.genre
-        if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
+        slug = re.match(r'^[-a-zA-Z0-9_]+$', self.genre)
+        if not slug:
             raise serializers.ValidationError(
                 'Неверный слаг!')
         return slug
@@ -90,36 +77,3 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Category
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    """Сериалайзер для модели ревью."""
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
-    score = serializers.IntegerField()
-
-    def validate_review(self, data):
-        """Проверка повторного ревью."""
-        if self.context['request'].user == data:
-            raise serializers.ValidationError(
-                'Вы уже оставили ревью!')
-        return data
-
-    def validate_score(self, data):
-        """Проверка оценки."""
-        if not 0 < data < 11:
-            raise serializers.ValidationError(
-                'Оценка должна быть от 1 до 10!')
-        return data
-
-    class Meta:
-        fields = '__all__'
-        model = Review
-        validators = (
-            serializers.UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('author', 'title.name'),
-                message='Вы уже оставили ревью!'
-            ),)

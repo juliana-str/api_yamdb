@@ -9,7 +9,5 @@ class UserAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Category)
-admin.site.register(Comment)
 admin.site.register(Genre)
 admin.site.register(Title)
-admin.site.register(Review)
