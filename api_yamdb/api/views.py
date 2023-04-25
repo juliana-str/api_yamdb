@@ -9,8 +9,7 @@ from rest_framework import filters
 
 from .permissions import IsOwnerOrReadOnly, ReadOnly, ModeratorUser
 from .serializers import (CategorySerializer, GenreSerializer,
-                          CommentSerializer, TitleSerializer,
-                          ReviewSerializer, UserSerializer)
+                          TitleSerializer, UserSerializer)
 from reviews.models import Genre, Review, Category, Title, User, Comment
 
 

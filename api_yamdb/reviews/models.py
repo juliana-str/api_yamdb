@@ -28,7 +28,7 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    """Модель создания, редактирования и удаления объектов."""
+    """Модель создания, редактирования и удаления произведений."""
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -43,7 +43,7 @@ class Title(models.Model):
     name = models.CharField(max_length=50)
     year = models.IntegerField()
     rating = models.IntegerField(default='None')
-    description = models.CharField(max_length=200)
+    description = models.CharField(max_length=200, null=True)
 
 
 class Review(models.Model):
