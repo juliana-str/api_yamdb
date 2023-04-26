@@ -38,11 +38,10 @@ class GenreSerializer(serializers.ModelSerializer):
     )
 
     def validate_slug(self, slug):
-        def validate_slug(self, slug):
-            if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
-                raise serializers.ValidationError(
-                    'Неверный слаг!')
-            return slug
+        if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
+            raise serializers.ValidationError(
+                'Неверный слаг!')
+        return slug
 
     class Meta:
         fields = '__all__'
@@ -52,13 +51,14 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели произведения."""
     category = serializers.SlugRelatedField(
-        slug_field='category',
+        slug_field='name',
         read_only=True
     )
     genre = serializers.SlugRelatedField(
-        slug_field='genre',
+        slug_field='name',
         read_only=True
     )
+    name = serializers.CharField()
     rating = serializers.IntegerField()
 
     def validate_year(self, data):
@@ -72,4 +72,3 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
-
