@@ -24,12 +24,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Category
-        validators = (
-            serializers.UniqueTogetherValidator(
-                queryset=Category.objects.all(),
-                fields=('category', 'title'),
-                message='У произведения может быть только одна категория!'
-            ),)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -58,15 +52,22 @@ class TitleSerializer(serializers.ModelSerializer):
     )
     name = serializers.CharField()
     rating = serializers.IntegerField()
+    year = serializers.IntegerField()
 
-    def validate_year(self, data):
+    def validate_year(self, year):
         """Проверка года выпуска произведения."""
-        date = datetime.date()
-        if self.context.year > date.year:
+        date = datetime.date.today().strftime("%Y")
+        if year > int(date):
             raise serializers.ValidationError(
                 'Произведение еще не вышло!')
-        return data
+        return year
 
     class Meta:
         fields = '__all__'
         model = Title
+        validators = (
+            serializers.UniqueTogetherValidator(
+                queryset=Category.objects.all(),
+                fields=('category', 'name'),
+                message='У произведения может быть только одна категория!'
+            ),)

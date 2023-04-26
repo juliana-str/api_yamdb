@@ -50,6 +50,7 @@ class Title(models.Model):
 
 
 class Genre_title(models.Model):
+    """Модель связи моделей произведения и жанров."""
     genre = models.ManyToManyField(
         Genre,
     )
