@@ -57,39 +57,3 @@ class Genre_title(models.Model):
         on_delete=models.CASCADE,
         null=True
     )
-
-
-class Review(models.Model):
-    """Модель создания, редактирования и удаления отзывов."""
-    text = models.TextField()
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='author',
-    )
-    score = models.IntegerField()
-    pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True)
-
-
-class Comment(models.Model):
-    """Модель создания, редактирования и удаления комментариев."""
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='comments')
-    review = models.ForeignKey(
-        Review,
-        on_delete=models.SET_NULL,
-        related_name='comments',
-        null=True
-    )
-    text = models.TextField()
-    pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True)
-
-    def __str__(self):
-        return self.text
-
-
-
