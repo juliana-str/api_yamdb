@@ -3,7 +3,7 @@ import re
 
 from rest_framework import serializers
 
-from reviews.models import Category, Comment, Genre, Review, User, Title
+from reviews.models import Category, Genre, User, Title
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -68,8 +68,6 @@ class TitleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Произведение еще не вышло!')
         return data
-
-
 
     class Meta:
         fields = '__all__'

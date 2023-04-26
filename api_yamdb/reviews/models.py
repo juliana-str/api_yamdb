@@ -20,7 +20,7 @@ class Category(models.Model):
 
 class Genre(models.Model):
     """Модель просмотра, создания и удаления жанров произведений."""
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
@@ -38,7 +38,8 @@ class Title(models.Model):
     genre = models.ForeignKey(
         Genre,
         on_delete=models.SET_NULL,
-        null=True
+        null=True,
+        related_name='title'
     )
     name = models.CharField(max_length=50)
     year = models.IntegerField()
