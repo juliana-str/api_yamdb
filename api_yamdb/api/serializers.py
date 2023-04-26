@@ -20,22 +20,20 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериалайзер для модели категория."""
-    category = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True
-    )
 
     class Meta:
         fields = '__all__'
         model = Category
+        validators = (
+            serializers.UniqueTogetherValidator(
+                queryset=Category.objects.all(),
+                fields=('category', 'title'),
+                message='У произведения может быть только одна категория!'
+            ),)
 
 
 class GenreSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели жанры."""
-    genre = serializers.SlugRelatedField(
-        slug_field='name',
-        queryset=Genre.objects.all()
-    )
 
     def validate_slug(self, slug):
         if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
