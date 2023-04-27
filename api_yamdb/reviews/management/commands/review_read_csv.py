@@ -27,4 +27,3 @@ class Command(BaseCommand):
                     score=row[4],
                     pub_date=row[5]
                 )
-        print('done')
