@@ -52,7 +52,7 @@ class SignUpSerializer(serializers.Serializer):
         return value
 
 
-class GetTokenSerializer(serializers.Serializer):
+class TokenSerializer(serializers.Serializer):
     """Сериализатор объектов типа User при получении токена."""
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
