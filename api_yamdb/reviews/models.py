@@ -3,10 +3,17 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """Модель просмотра, создания и удаления пользователей."""
     bio = models.TextField(
-        'Биография',
-        blank=True)
-    role = models.CharField(max_length=10)
+        verbose_name='Биография',
+        blank=True,
+        null=True
+    )
+    role = models.CharField(
+        max_length=15,
+        default='User',
+        verbose_name='Право доступа'
+    )
 
 
 class Category(models.Model):
@@ -51,11 +58,12 @@ class Title(models.Model):
 
 class Genre_title(models.Model):
     """Модель связи моделей произведения и жанров."""
-    genre = models.ManyToManyField(
+    genre = models.ForeignKey(
         Genre,
+        on_delete=models.SET_NULL,
+        null=True
     )
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        null=True
     )
