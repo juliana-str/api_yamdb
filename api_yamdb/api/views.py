@@ -1,50 +1,141 @@
-from django.shortcuts import get_object_or_404
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.db import IntegrityError
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly,
-    IsAdminUser,
-    IsAuthenticated)
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
-from rest_framework import filters
+from rest_framework import filters, status, permissions, serializers
 
-from .permissions import IsOwnerOrReadOnly, ReadOnly, ModeratorUser
-from .serializers import (CategorySerializer, GenreSerializer,
-                          CommentSerializer, TitleSerializer,
-                          ReviewSerializer, UserSerializer)
+from api_yamdb.settings import EMAIL
+
+from .permissions import IsAdmin, IsAdminOrReadOnly, IsAdminAuthorOrReadOnly
+from .serializers import (
+    CategorySerializer,
+    GenreSerializer,
+    CommentSerializer,
+    TitleSerializer,
+    ReviewSerializer,
+    UserSerializer,
+    SignUpSerializer,
+    TokenSerializer,
+)
 from reviews.models import Genre, Review, Category, Title, User, Comment
 
 
 class UserViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления пользователей."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdminUser, )
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    search_fields = ('username',)
+    permission_classes = (IsAdmin, )
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    )
+    search_fields = ("username",)
+
+    @action(
+        methods=(
+            "get",
+            "patch",
+        ),
+        detail=False,
+        url_path="me",
+        permission_classes=(permissions.IsAuthenticated,),
+    )
+    def user_own_account(self, request):
+        user = request.user
+        if request.method == "GET":
+            serializer = self.get_serializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(
+            user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(role=user.role, partial=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def signup(request):
+    serializer = SignUpSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data["username"]
+    email = serializer.validated_data["email"]
+    try:
+        user, created = User.objects.get_or_create(username=username, email=email)
+        confirmation_code = default_token_generator.make_token(user)
+        send_mail(
+            "Код подтверждения",
+            f"Ваш код подтверждения: {confirmation_code}",
+            EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except IntegrityError:
+        raise serializers.ValidationError(
+            "Данные имя пользователя или Email уже зарегистрированы"
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def get_token(request):
+    serializer = TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data["username"]
+    confirmation_code = serializer.validated_data["confirmation_code"]
+    user = get_object_or_404(User, username=username)
+    if default_token_generator.check_token(user, confirmation_code):
+        token = str(AccessToken.for_user(user))
+        return Response({"token": token}, status=status.HTTP_200_OK)
+    raise serializers.ValidationError("Введен неверный код.")
 
 
 class CategoryViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления категории."""
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (ReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    search_fields = ('name',)
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    )
+    search_fields = ("name",)
 
 
 class GenreViewSet(ModelViewSet):
     """Вьюсет для просмотра жанров."""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (ReadOnly, )
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    search_fields = ('name',)
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    )
+    search_fields = ("name",)
 
 
 class TitleViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления категории."""
+
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (ReadOnly, )
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    search_fields = ('category', 'name', 'genre', 'year',)
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    )
+    search_fields = (
+        "category",
+        "name",
+        "genre",
+        "year",
+    )

@@ -17,6 +17,46 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = User
 
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Нельзя использовать "me" в качестве имени пользователя'
+            )
+        if User.objects.filter(username=value).exists():
+            return serializers.ValidationError(
+                'Данное имя пользователя уже существует')
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            return serializers.ValidationError(
+                'Данный Email уже зарегистрирован')
+        return value
+
+
+class SignUpSerializer(serializers.Serializer):
+    """Сериализатор объектов типа User при регистрации."""
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z',
+        required=True
+    )
+    email = serializers.EmailField(
+        required=True
+    )
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Нельзя использовать "me" в качестве имени пользователя'
+            )
+        return value
+
+
+class GetTokenSerializer(serializers.Serializer):
+    """Сериализатор объектов типа User при получении токена."""
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериалайзер для модели категория."""
