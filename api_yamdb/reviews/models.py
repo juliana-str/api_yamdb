@@ -32,6 +32,7 @@ class User(AbstractUser):
     class Meta:
         ordering = ('id',)
 
+
 class Category(models.Model):
     """Модель просмотра, создания и удаления категорий произведений."""
     name = models.CharField(max_length=50, unique=True)
