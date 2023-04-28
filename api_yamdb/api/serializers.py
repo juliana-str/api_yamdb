@@ -64,7 +64,7 @@ class CategorySerializer(serializers.ModelSerializer):
     """Сериалайзер для модели категория."""
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug')
         model = Category
 
 
@@ -78,7 +78,7 @@ class GenreSerializer(serializers.ModelSerializer):
         return slug
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug')
         model = Genre
 
 
