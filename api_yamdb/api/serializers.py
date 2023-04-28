@@ -3,7 +3,7 @@ import re
 
 from rest_framework import serializers
 
-from reviews.models import Category, Comment, Genre, Review, User
+from reviews.models import Category, Genre, User, Title
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -90,30 +90,33 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    """Сериалайзер для модели категория."""
+    """Сериалайзер для модели произведения."""
     category = serializers.SlugRelatedField(
-        slug_field='title',
+        slug_field='name',
         read_only=True
     )
     genre = serializers.SlugRelatedField(
-        slug_field='genre',
+        slug_field='name',
         read_only=True
     )
+    name = serializers.CharField()
+    rating = serializers.IntegerField()
+    year = serializers.IntegerField()
 
-    def validate_year(self, data):
+    def validate_year(self, year):
         """Проверка года выпуска произведения."""
-        date = datetime.date()
-        if self.context.year > date:
+        date = datetime.date.today().strftime("%Y")
+        if year > int(date):
             raise serializers.ValidationError(
                 'Произведение еще не вышло!')
-        return data
-
-    def validate_rating(self, data):
-        if 0 < data > 10:
-            raise serializers.ValidationError(
-                'Поставьте оценку от 1 до 10!')
-        return data
+        return year
 
     class Meta:
         fields = '__all__'
-        model = Category
+        model = Title
+        validators = (
+            serializers.UniqueTogetherValidator(
+                queryset=Category.objects.all(),
+                fields=('category', 'name'),
+                message='У произведения может быть только одна категория!'
+            ),)

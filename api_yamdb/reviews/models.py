@@ -8,6 +8,22 @@ class User(AbstractUser):
         blank=True)
     role = models.CharField(max_length=10)
 
+    def __str__(self):
+        return self.username
+
+    @property
+    def is_admin(self):
+        return (
+            self.role == 'admin'
+            or self.is_superuser
+        )
+
+    @property
+    def is_moderator(self):
+        return self.role == 'moderator'
+
+    class Meta:
+        ordering = ('id',)
 
 class Category(models.Model):
     """Модель просмотра, создания и удаления категорий произведений."""

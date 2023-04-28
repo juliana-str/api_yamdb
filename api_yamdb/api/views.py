@@ -12,13 +12,11 @@ from rest_framework import filters, status, permissions, serializers
 
 from api_yamdb.settings import EMAIL
 
-from .permissions import IsAdmin, IsAdminOrReadOnly, IsAdminAuthorOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrModerOnly
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
-    CommentSerializer,
     TitleSerializer,
-    ReviewSerializer,
     UserSerializer,
     SignUpSerializer,
     TokenSerializer,
@@ -31,7 +29,7 @@ class UserViewSet(ModelViewSet):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdmin, )
+    permission_classes = (permissions.IsAdminUser, )
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -102,7 +100,7 @@ class CategoryViewSet(ModelViewSet):
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrModerOnly,)
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -115,7 +113,7 @@ class GenreViewSet(ModelViewSet):
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrModerOnly,)
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -128,7 +126,7 @@ class TitleViewSet(ModelViewSet):
 
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrModerOnly,)
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
