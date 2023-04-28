@@ -21,7 +21,7 @@ from .serializers import (
     SignUpSerializer,
     TokenSerializer,
 )
-from reviews.models import Genre, Review, Category, Title, User, Comment
+from reviews.models import Genre, Category, Title, User
 
 
 class UserViewSet(ModelViewSet):
