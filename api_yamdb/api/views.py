@@ -5,12 +5,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework import filters, status, permissions, serializers
-
-from api_yamdb.settings import EMAIL
 
 from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrModerOnly
 from .serializers import (
@@ -21,7 +19,9 @@ from .serializers import (
     SignUpSerializer,
     TokenSerializer,
 )
-from reviews.models import Genre, Review, Category, Title, User, Comment
+from reviews.models import Genre, Category, Title, User
+
+from api_yamdb.settings import EMAIL
 
 
 class UserViewSet(ModelViewSet):
@@ -100,7 +100,7 @@ class CategoryViewSet(ModelViewSet):
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAuthorOrAdminOrModerOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -110,10 +110,9 @@ class CategoryViewSet(ModelViewSet):
 
 class GenreViewSet(ModelViewSet):
     """Вьюсет для просмотра жанров."""
-
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAuthorOrAdminOrModerOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -126,7 +125,7 @@ class TitleViewSet(ModelViewSet):
 
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = (IsAuthorOrAdminOrModerOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,

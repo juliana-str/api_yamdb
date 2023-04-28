@@ -23,13 +23,13 @@ class UserSerializer(serializers.ModelSerializer):
                 'Нельзя использовать "me" в качестве имени пользователя'
             )
         if User.objects.filter(username=value).exists():
-            return serializers.ValidationError(
+            raise serializers.ValidationError(
                 'Данное имя пользователя уже существует')
         return value
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            return serializers.ValidationError(
+            raise serializers.ValidationError(
                 'Данный Email уже зарегистрирован')
         return value
 
@@ -38,10 +38,12 @@ class SignUpSerializer(serializers.Serializer):
     """Сериализатор объектов типа User при регистрации."""
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
-        required=True
+        required=True,
+        max_length=150
     )
     email = serializers.EmailField(
-        required=True
+        required=True,
+        max_length=254
     )
 
     def validate_username(self, value):
@@ -62,7 +64,7 @@ class CategorySerializer(serializers.ModelSerializer):
     """Сериалайзер для модели категория."""
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug')
         model = Category
 
 
@@ -76,7 +78,7 @@ class GenreSerializer(serializers.ModelSerializer):
         return slug
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug')
         model = Genre
 
 
