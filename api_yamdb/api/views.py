@@ -9,7 +9,6 @@ from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import filters, status, permissions, serializers
-
 from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrModerOnly
 from .serializers import (
     CategorySerializer,
@@ -36,22 +35,15 @@ class UserViewSet(ModelViewSet):
     )
     search_fields = ("username",)
 
-    @action(
-        methods=(
-            "get",
-            "patch",
-        ),
-        detail=False,
-        url_path="me",
-        permission_classes=(permissions.IsAuthenticated,),
-    )
+    @action(methods=('get', 'patch',), detail=False, url_path='me',
+            permission_classes=(permissions.IsAuthenticated,))
     def user_own_account(self, request):
         user = request.user
-        if request.method == "GET":
+        if request.method == 'GET':
             serializer = self.get_serializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        serializer = self.get_serializer(
-            user, data=request.data, partial=True)
+        serializer = self.get_serializer(user, data=request.data,
+                                         partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(role=user.role, partial=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

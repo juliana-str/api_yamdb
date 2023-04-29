@@ -2,7 +2,6 @@ import datetime
 import re
 
 from rest_framework import serializers
-
 from reviews.models import Category, Genre, User, Title
 
 
