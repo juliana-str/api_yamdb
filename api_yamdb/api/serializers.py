@@ -12,7 +12,6 @@ class UserSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True
     )
-
     class Meta:
         fields = '__all__'
         model = User
@@ -38,10 +37,12 @@ class SignUpSerializer(serializers.Serializer):
     """Сериализатор объектов типа User при регистрации."""
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
-        required=True
+        required=True,
+        max_length=150
     )
     email = serializers.EmailField(
-        required=True
+        required=True,
+        max_length=254
     )
 
     def validate_username(self, value):
@@ -60,10 +61,6 @@ class TokenSerializer(serializers.Serializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериалайзер для модели категория."""
-    name = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True
-    )
 
     class Meta:
         fields = '__all__'
@@ -72,20 +69,15 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class GenreSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели жанры."""
-    genre = serializers.SlugRelatedField(
-        slug_field='name',
-        queryset=Genre.objects.all()
-    )
 
-    def validate_slug(self):
-        slug = re.match(r'^[-a-zA-Z0-9_]+$', self.genre)
-        if not slug:
+    def validate_slug(self, slug):
+        if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
             raise serializers.ValidationError(
                 'Неверный слаг!')
         return slug
 
     class Meta:
-        read_only_fields = '__all__'
+        fields = '__all__'
         model = Genre
 
 
