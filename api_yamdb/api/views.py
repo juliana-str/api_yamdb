@@ -14,6 +14,7 @@ from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrModerOnly
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
+    TitleGetSerializer,
     TitleSerializer,
     UserSerializer,
     SignUpSerializer,
@@ -121,11 +122,11 @@ class GenreViewSet(ModelViewSet):
 
 
 class TitleViewSet(ModelViewSet):
-    """Вьюсет для просмотра, создания, удаления категории."""
-
+    """Вьюсет для просмотра, создания, удаления произведения."""
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    Get_serializer_class = TitleGetSerializer
+    Title_serializer_class = TitleSerializer
+    permission_classes = (AllowAny,)
     filter_backends = (
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -136,3 +137,20 @@ class TitleViewSet(ModelViewSet):
         "genre",
         "year",
     )
+
+    def get_serializer_class(self):
+        if self.action == 'get':
+            return self.Get_serializer_class
+        return self.Title_serializer_class
+
+    def perform_create(self, serializer):
+        """Метод создания произведения."""
+        serializer.save(
+            category=self.request.category,
+            genre=self.request.genre,
+            name=self.request.name,
+            year=self.request.year,
+            description=self.request.description,
+            rating=5)
+
+
