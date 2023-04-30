@@ -1,3 +1,4 @@
+import datetime
 import re
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
@@ -98,19 +99,21 @@ class TitleGetSerializer(serializers.ModelSerializer):
     year = serializers.IntegerField()
 
     class Meta:
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
         model = Title
 
 
 class TitleSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели произведения."""
     category = serializers.SlugRelatedField(
-        slug_field='name',
+        slug_field='slug',
         required=True,
         queryset=Category.objects.all()
     )
     genre = serializers.SlugRelatedField(
-        slug_field='name',
+        slug_field='slug',
         many=True,
         required=True,
         queryset=Genre.objects.all()
@@ -119,8 +122,16 @@ class TitleSerializer(serializers.ModelSerializer):
         max_length=256
     )
 
+    def validate_year(self, year):
+        """Проверка года выпуска произведения."""
+        date = datetime.date.today().strftime("%Y")
+        if year > int(date):
+            raise serializers.ValidationError(
+                'Произведение еще не вышло!')
+        return year
+
     class Meta:
-        fields = ('id', 'name', 'year', 'category', 'genre', 'description')
+        fields = ('name', 'year', 'category', 'genre', 'description')
         model = Title
         validators = (
             serializers.UniqueTogetherValidator(

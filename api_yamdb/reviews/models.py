@@ -66,21 +66,15 @@ class Title(models.Model):
         Category,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='title',
+        related_name='titles',
     )
-    genre = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genre,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='title'
+        through='Genre_title',
+        related_name='titles'
     )
     name = models.CharField(max_length=256)
     year = models.IntegerField()
-    rating = models.CharField(
-        max_length=2,
-        null=True,
-        blank=True,
-    )
     description = models.CharField(max_length=200,
                                    null=True,
                                    blank=True)

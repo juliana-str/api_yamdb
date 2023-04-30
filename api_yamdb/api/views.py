@@ -13,7 +13,7 @@ from rest_framework import filters, status, permissions, serializers
 from api_yamdb.settings import EMAIL
 
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerOnly
-from .filters import CategoryFilter, GenreFilter, TitleFilter
+from .filters import TitleFilter
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -98,9 +98,9 @@ class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    filterset_class = CategoryFilter
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class GenreViewSet(ModelViewSet):
@@ -108,9 +108,9 @@ class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
-    filterset_class = GenreFilter
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class TitleViewSet(ModelViewSet):
@@ -119,9 +119,8 @@ class TitleViewSet(ModelViewSet):
     Get_serializer_class = TitleGetSerializer
     Title_serializer_class = TitleSerializer
     permission_classes = (AllowAny,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-    search_fields = ('name', 'genre', 'year', 'category',)
 
     def get_serializer_class(self):
         if self.action == 'get':
