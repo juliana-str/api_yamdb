@@ -4,13 +4,22 @@ from django.db import models
 
 class User(AbstractUser):
     """Модель просмотра, создания и удаления пользователей."""
+    username = models.CharField(
+        blank=False,
+        max_length=150,
+        unique=True
+    )
+    email = models.EmailField(
+        blank=False,
+        unique=True
+    )
     bio = models.TextField(
         verbose_name='Биография',
         blank=True,
         null=True
     )
     role = models.CharField(
-        max_length=15,
+        max_length=16,
         default='User',
         verbose_name='Право доступа'
     )

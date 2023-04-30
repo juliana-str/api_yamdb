@@ -1,27 +1,33 @@
 import datetime
 import re
-
+from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
-
 from reviews.models import Category, Genre, User, Title
 
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели пользователей."""
-    user = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z',
+        required=True,
+        max_length=150,
+        validators=[UniqueValidator(queryset=User.objects.all())]
     )
+    email = serializers.EmailField(
+        required=True,
+        max_length=254,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+        )
 
     class Meta:
-        fields = '__all__'
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role',)
         model = User
 
     def validate_username(self, value):
         if value == 'me':
             raise serializers.ValidationError(
-                'Нельзя использовать "me" в качестве имени пользователя'
-            )
+                'Нельзя использовать "me" в качестве имени пользователя')
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError(
                 'Данное имя пользователя уже существует')
