@@ -101,7 +101,6 @@ class CategoryViewSet(ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     filterset_class = CategoryFilter
     search_fields = ('name',)
-    lookup_field = 'name'
 
 
 class GenreViewSet(ModelViewSet):
@@ -112,7 +111,6 @@ class GenreViewSet(ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     filterset_class = GenreFilter
     search_fields = ('name',)
-    lookup_field = 'name'
 
 
 class TitleViewSet(ModelViewSet):
