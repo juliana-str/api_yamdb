@@ -13,6 +13,7 @@ from rest_framework import filters, status, permissions, serializers
 from api_yamdb.settings import EMAIL
 
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerOnly
+from .filters import CategoryFilter, GenreFilter, TitleFilter
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -97,11 +98,10 @@ class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (
-        DjangoFilterBackend,
-        filters.SearchFilter,
-    )
-    search_fields = ("name",)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filterset_class = CategoryFilter
+    search_fields = ('name',)
+    lookup_field = 'name'
 
 
 class GenreViewSet(ModelViewSet):
@@ -109,11 +109,10 @@ class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (
-        DjangoFilterBackend,
-        filters.SearchFilter,
-    )
-    search_fields = ("name",)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filterset_class = GenreFilter
+    search_fields = ('name',)
+    lookup_field = 'name'
 
 
 class TitleViewSet(ModelViewSet):
@@ -122,30 +121,11 @@ class TitleViewSet(ModelViewSet):
     Get_serializer_class = TitleGetSerializer
     Title_serializer_class = TitleSerializer
     permission_classes = (AllowAny,)
-    filter_backends = (
-        DjangoFilterBackend,
-        filters.SearchFilter,
-    )
-    search_fields = (
-        "category",
-        "name",
-        "genre",
-        "year",
-    )
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filterset_class = TitleFilter
+    search_fields = ('name', 'genre', 'year', 'category',)
 
     def get_serializer_class(self):
         if self.action == 'get':
             return self.Get_serializer_class
         return self.Title_serializer_class
-
-    def perform_create(self, serializer):
-        """Метод создания произведения."""
-        serializer.save(
-            category=self.request.category,
-            genre=self.request.genre,
-            name=self.request.name,
-            year=self.request.year,
-            description=self.request.description,
-            rating=5)
-
-

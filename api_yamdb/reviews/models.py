@@ -74,7 +74,7 @@ class Title(models.Model):
         null=True,
         related_name='title'
     )
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=256)
     year = models.IntegerField()
     rating = models.CharField(
         max_length=2,

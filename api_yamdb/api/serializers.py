@@ -90,8 +90,10 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleGetSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели произведения."""
     category = CategorySerializer(required=True)
-    genre = GenreSerializer(many=True, required=False)
-    name = serializers.CharField()
+    genre = GenreSerializer(many=True, required=True)
+    name = serializers.CharField(
+        max_length=256
+    )
     rating = 8  # calculate_rating
     year = serializers.IntegerField()
 
@@ -110,8 +112,11 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         slug_field='name',
         many=True,
-        required=False,
+        required=True,
         queryset=Genre.objects.all()
+    )
+    name = serializers.CharField(
+        max_length=256
     )
 
     class Meta:
