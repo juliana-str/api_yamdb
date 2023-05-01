@@ -44,8 +44,8 @@ class User(AbstractUser):
 
 class Category(models.Model):
     """Модель просмотра, создания и удаления категорий произведений."""
-    name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=256, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -53,8 +53,8 @@ class Category(models.Model):
 
 class Genre(models.Model):
     """Модель просмотра, создания и удаления жанров произведений."""
-    name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=256, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -66,7 +66,7 @@ class Title(models.Model):
         Category,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='titles',
+        related_name='category',
     )
     genre = models.ManyToManyField(
         Genre,
@@ -78,6 +78,9 @@ class Title(models.Model):
     description = models.CharField(max_length=200,
                                    null=True,
                                    blank=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Genre_title(models.Model):

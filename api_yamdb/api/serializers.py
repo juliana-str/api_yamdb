@@ -69,9 +69,22 @@ class TokenSerializer(serializers.Serializer):
 class CategorySerializer(serializers.ModelSerializer):
     """Сериалайзер для модели категория."""
 
+    def validate_slug(self, slug):
+        if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
+            raise serializers.ValidationError(
+                'Неверный слаг!')
+        return slug
+
     class Meta:
         fields = ('name', 'slug')
         model = Category
+
+
+class CategoryGetField(serializers.SlugRelatedField):
+    """Сериалайзер для поля модели категория."""
+    def to_representation(self, value):
+        serializer = CategorySerializer(value)
+        return serializer.data
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -88,38 +101,30 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
+class GenreGetField(serializers.SlugRelatedField):
+    """Сериалайзер для поля модели жанры."""
+    def to_representation(self, value):
+        serializer = GenreSerializer(value)
+        return serializer.data
+
+
 class TitleGetSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели произведения."""
-    category = CategorySerializer(required=True)
-    genre = GenreSerializer(many=True, required=True)
-    name = serializers.CharField(
-        max_length=256
-    )
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
     rating = 8  # calculate_rating
-    year = serializers.IntegerField()
 
     class Meta:
-        fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
-        )
+        fields = '__all__'
         model = Title
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    """Сериалайзер для модели произведения."""
-    category = serializers.SlugRelatedField(
-        slug_field='slug',
-        required=True,
-        queryset=Category.objects.all()
+    category = CategoryGetField(
+        slug_field='slug', queryset=Category.objects.all()
     )
-    genre = serializers.SlugRelatedField(
-        slug_field='slug',
-        many=True,
-        required=True,
-        queryset=Genre.objects.all()
-    )
-    name = serializers.CharField(
-        max_length=256
+    genre = GenreGetField(
+        slug_field='slug', queryset=Genre.objects.all(), many=True
     )
 
     def validate_year(self, year):
@@ -131,7 +136,7 @@ class TitleSerializer(serializers.ModelSerializer):
         return year
 
     class Meta:
-        fields = ('name', 'year', 'category', 'genre', 'description')
+        fields = '__all__'
         model = Title
         validators = (
             serializers.UniqueTogetherValidator(

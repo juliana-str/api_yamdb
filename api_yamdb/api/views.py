@@ -94,13 +94,19 @@ def get_token(request):
 
 class CategoryViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления категории."""
-
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
+    search_fields = ('name', 'slug')
     lookup_field = 'slug'
+    http_method_names = ['get', 'post', 'delete']
+
+    def destroy(self, request, *args, **kwargs):
+        category = Category.objects.filter(id=self.kwargs.get('id'))
+        category.delete()
+        if not category:
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class GenreViewSet(ModelViewSet):
@@ -109,8 +115,15 @@ class GenreViewSet(ModelViewSet):
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
+    search_fields = ('name', 'slug')
     lookup_field = 'slug'
+    http_method_names = ['get', 'post', 'delete']
+
+    def destroy(self, request, *args, **kwargs):
+        genre = Genre.objects.filter(id=self.kwargs.get('id'))
+        genre.delete()
+        if not genre:
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TitleViewSet(ModelViewSet):
@@ -118,9 +131,10 @@ class TitleViewSet(ModelViewSet):
     queryset = Title.objects.all()
     Get_serializer_class = TitleGetSerializer
     Title_serializer_class = TitleSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
         if self.action == 'get':
