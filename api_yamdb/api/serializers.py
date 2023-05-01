@@ -69,9 +69,22 @@ class TokenSerializer(serializers.Serializer):
 class CategorySerializer(serializers.ModelSerializer):
     """Сериалайзер для модели категория."""
 
+    def validate_slug(self, slug):
+        if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
+            raise serializers.ValidationError(
+                'Неверный слаг!')
+        return slug
+
     class Meta:
         fields = ('name', 'slug')
         model = Category
+
+
+class CategoryGetField(serializers.SlugRelatedField):
+    """Сериалайзер для поля модели категория."""
+    def to_representation(self, value):
+        serializer = CategorySerializer(value)
+        return serializer.data
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -88,19 +101,31 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class GenreGetField(serializers.SlugRelatedField):
+    """Сериалайзер для поля модели жанры."""
+    def to_representation(self, value):
+        serializer = GenreSerializer(value)
+        return serializer.data
+
+
+class TitleGetSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели произведения."""
-    category = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+    rating = 8  # calculate_rating
+
+    class Meta:
+        fields = '__all__'
+        model = Title
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    category = CategoryGetField(
+        slug_field='slug', queryset=Category.objects.all()
     )
-    genre = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True
+    genre = GenreGetField(
+        slug_field='slug', queryset=Genre.objects.all(), many=True
     )
-    name = serializers.CharField()
-    rating = serializers.IntegerField()
-    year = serializers.IntegerField()
 
     def validate_year(self, year):
         """Проверка года выпуска произведения."""

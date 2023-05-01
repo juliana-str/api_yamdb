@@ -1,6 +1,11 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+ROLE = (
+       ('user', 'Пользователь'),
+       ('moderator', 'Модератор'),
+       ('admin', 'Администратор'),
+)
 
 class User(AbstractUser):
     """Модель просмотра, создания и удаления пользователей."""
@@ -19,10 +24,11 @@ class User(AbstractUser):
         null=True
     )
     role = models.CharField(
+        choices=ROLE,
         max_length=16,
-        default='User',
-        verbose_name='Право доступа'
-    )
+        default='user',
+        verbose_name='Роль'
+        )
 
     def __str__(self):
         return self.username
@@ -44,8 +50,8 @@ class User(AbstractUser):
 
 class Category(models.Model):
     """Модель просмотра, создания и удаления категорий произведений."""
-    name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=256, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -53,8 +59,8 @@ class Category(models.Model):
 
 class Genre(models.Model):
     """Модель просмотра, создания и удаления жанров произведений."""
-    name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=256, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -66,20 +72,21 @@ class Title(models.Model):
         Category,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='title',
+        related_name='category',
     )
-    genre = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genre,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='title'
+        through='Genre_title',
+        related_name='titles'
     )
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=256)
     year = models.IntegerField()
-    rating = models.IntegerField(null=True, blank=True)
     description = models.CharField(max_length=200,
                                    null=True,
                                    blank=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Genre_title(models.Model):
