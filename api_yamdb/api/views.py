@@ -26,7 +26,6 @@ from reviews.models import Genre, Category, Title, User
 
 class UserViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления пользователей."""
-
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin, )
@@ -35,7 +34,8 @@ class UserViewSet(ModelViewSet):
         filters.SearchFilter,
     )
     search_fields = ("username",)
-    lookup_field = 'username'
+    lookup_field = "username"
+    http_method_names = ["get", "post", "patch", "delete"]
 
     @action(methods=('get', 'patch',), detail=False, url_path='me',
             permission_classes=(permissions.IsAuthenticated,))
