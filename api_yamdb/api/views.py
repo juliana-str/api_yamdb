@@ -117,7 +117,6 @@ class GenreViewSet(mixins.CreateModelMixin,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-    http_method_names = ['get', 'post', 'delete']
 
 
 class TitleViewSet(ModelViewSet):

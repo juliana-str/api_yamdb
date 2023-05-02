@@ -7,6 +7,7 @@ ROLE = (
        ('admin', 'Администратор'),
 )
 
+
 class User(AbstractUser):
     """Модель просмотра, создания и удаления пользователей."""
     username = models.CharField(
@@ -28,7 +29,7 @@ class User(AbstractUser):
         max_length=16,
         default='user',
         verbose_name='Роль'
-        )
+    )
 
     def __str__(self):
         return self.username
