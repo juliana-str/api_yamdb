@@ -2,7 +2,7 @@ import datetime
 import re
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
-from reviews.models import Category, Genre, User, Title
+from reviews.models import Category, Genre, User, Title, Review, Comment
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -112,11 +112,14 @@ class TitleGetSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели произведения."""
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
-    rating = 8  # calculate_rating
+    rating = serializers.IntegerField()
 
     class Meta:
-        fields = '__all__'
         model = Title
+        fields = [
+            'id', 'name', 'year', 'rating',
+            'description', 'genre', 'category'
+        ]
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -144,3 +147,39 @@ class TitleSerializer(serializers.ModelSerializer):
                 fields=('category', 'name'),
                 message='У произведения может быть только одна категория!'
             ),)
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        model = Review
+        exclude = ['title']
+        read_only_fields = (
+            'id', 'author', 'pub_date',
+        )
+
+    def validate(self, data):
+        if self.context['request'].method == 'POST':
+            user = self.context['request'].user
+            title_id = self.context['view'].kwargs.get('title_id')
+            if Review.objects.filter(author=user, title_id=title_id).exists():
+                raise serializers.ValidationError('Вы уже оставили отзыв.')
+        return data
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        model = Comment
+        exclude = ['review']
+        read_only_fields = (
+            'id', 'author', 'pub_date',
+        )
