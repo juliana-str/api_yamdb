@@ -4,23 +4,28 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-ROLE = (
-       ('user', 'Пользователь'),
-       ('moderator', 'Модератор'),
-       ('admin', 'Администратор'),
-)
+from .validators import validate_username
+
+USER = 'user'
+MODER = 'moderator'
+ADMIN = 'admin'
+ROLE = [
+    (USER, 'Аутентифицированный пользователь'),
+    (MODER, 'Модератор'),
+    (ADMIN, 'Администратор'),
+]
 
 
 class User(AbstractUser):
     """Модель просмотра, создания и удаления пользователей."""
     username = models.CharField(
-        blank=False,
         max_length=150,
-        unique=True
+        unique=True,
+        validators=(validate_username,)
     )
     email = models.EmailField(
-        blank=False,
-        unique=True
+        unique=True,
+        max_length=254
     )
     bio = models.TextField(
         verbose_name='Биография',
@@ -34,8 +39,8 @@ class User(AbstractUser):
         verbose_name='Роль'
     )
 
-    def __str__(self):
-        return self.username
+    class Meta:
+        ordering = ('id',)
 
     @property
     def is_admin(self):
@@ -48,8 +53,8 @@ class User(AbstractUser):
     def is_moderator(self):
         return self.role == 'moderator'
 
-    class Meta:
-        ordering = ('id',)
+    def __str__(self):
+        return self.username
 
 
 class Category(models.Model):
