@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -82,21 +84,28 @@ class Title(models.Model):
         related_name='titles'
     )
     name = models.CharField(max_length=256)
-    year = models.IntegerField()
-    description = models.CharField(max_length=200,
-                                   null=True,
-                                   blank=True)
+    year = models.PositiveSmallIntegerField(
+        validators=[
+                MaxValueValidator
+                (datetime.date.today().strftime("%Y"),
+                 'Произведение еще не вышло!')
+        ]
+    )
+    description = models.TextField(
+        max_length=200,
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return self.name
 
 
-class Genre_title(models.Model):
+class GenreTitle(models.Model):
     """Модель связи моделей произведения и жанров."""
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.SET_NULL,
-        null=True
+        on_delete=models.CASCADE,
     )
     title = models.ForeignKey(
         Title,

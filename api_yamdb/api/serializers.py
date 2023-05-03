@@ -1,7 +1,9 @@
 import datetime
 import re
+
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
+
 from reviews.models import Category, Genre, User, Title, Review, Comment
 
 
@@ -69,12 +71,6 @@ class TokenSerializer(serializers.Serializer):
 class CategorySerializer(serializers.ModelSerializer):
     """Сериалайзер для модели категория."""
 
-    def validate_slug(self, slug):
-        if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
-            raise serializers.ValidationError(
-                'Неверный слаг!')
-        return slug
-
     class Meta:
         fields = ('name', 'slug')
         model = Category
@@ -89,12 +85,6 @@ class CategoryGetField(serializers.SlugRelatedField):
 
 class GenreSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели жанры."""
-
-    def validate_slug(self, slug):
-        if not re.match(r'^[-a-zA-Z0-9_]+$', slug):
-            raise serializers.ValidationError(
-                'Неверный слаг!')
-        return slug
 
     class Meta:
         fields = ('name', 'slug')
@@ -120,6 +110,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating',
             'description', 'genre', 'category'
         ]
+        read_only_fields = fields
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -130,23 +121,9 @@ class TitleSerializer(serializers.ModelSerializer):
         slug_field='slug', queryset=Genre.objects.all(), many=True
     )
 
-    def validate_year(self, year):
-        """Проверка года выпуска произведения."""
-        date = datetime.date.today().strftime("%Y")
-        if year > int(date):
-            raise serializers.ValidationError(
-                'Произведение еще не вышло!')
-        return year
-
     class Meta:
         fields = '__all__'
         model = Title
-        validators = (
-            serializers.UniqueTogetherValidator(
-                queryset=Category.objects.all(),
-                fields=('category', 'name'),
-                message='У произведения может быть только одна категория!'
-            ),)
 
 
 class ReviewSerializer(serializers.ModelSerializer):

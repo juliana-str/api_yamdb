@@ -4,6 +4,7 @@ from django.db import IntegrityError
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly)
@@ -13,7 +14,6 @@ from rest_framework import (filters, status, permissions, serializers,
                             mixins, viewsets)
 
 from api_yamdb.settings import EMAIL
-
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerOnly
 from .filters import TitleFilter
 from .serializers import (
@@ -127,8 +127,8 @@ class TitleViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления произведения."""
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).order_by('-id')
-    Get_serializer_class = TitleGetSerializer
-    Title_serializer_class = TitleSerializer
+    title_get_serializer_class = TitleGetSerializer
+    title_serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -136,8 +136,8 @@ class TitleViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
-            return self.Get_serializer_class
-        return self.Title_serializer_class
+            return self.title_get_serializer_class
+        return self.title_serializer_class
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
