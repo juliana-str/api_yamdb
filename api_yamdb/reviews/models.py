@@ -1,24 +1,31 @@
+import datetime
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-ROLE = (
-       ('user', 'Пользователь'),
-       ('moderator', 'Модератор'),
-       ('admin', 'Администратор'),
-)
+from .validators import validate_username
+
+USER = 'user'
+MODER = 'moderator'
+ADMIN = 'admin'
+ROLE = [
+    (USER, 'Аутентифицированный пользователь'),
+    (MODER, 'Модератор'),
+    (ADMIN, 'Администратор'),
+]
 
 
 class User(AbstractUser):
     """Модель просмотра, создания и удаления пользователей."""
     username = models.CharField(
-        blank=False,
         max_length=150,
-        unique=True
+        unique=True,
+        validators=(validate_username,)
     )
     email = models.EmailField(
-        blank=False,
-        unique=True
+        unique=True,
+        max_length=254
     )
     bio = models.TextField(
         verbose_name='Биография',
@@ -32,8 +39,8 @@ class User(AbstractUser):
         verbose_name='Роль'
     )
 
-    def __str__(self):
-        return self.username
+    class Meta:
+        ordering = ('id',)
 
     @property
     def is_admin(self):
@@ -46,8 +53,8 @@ class User(AbstractUser):
     def is_moderator(self):
         return self.role == 'moderator'
 
-    class Meta:
-        ordering = ('id',)
+    def __str__(self):
+        return self.username
 
 
 class Category(models.Model):
@@ -75,32 +82,42 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='category',
+        verbose_name='Категория'
     )
     genre = models.ManyToManyField(
         Genre,
-        through='Genre_title',
-        related_name='titles'
+        through='GenreTitle',
+        related_name='titles',
+        verbose_name='Жанр'
     )
-    name = models.CharField(max_length=256)
-    year = models.IntegerField()
-    description = models.CharField(max_length=200,
-                                   null=True,
-                                   blank=True)
+    name = models.CharField(max_length=256, verbose_name='Произведение')
+    year = models.PositiveSmallIntegerField(
+        validators=[
+            MaxValueValidator
+            (int(datetime.datetime.now().strftime("%Y")),
+                'Произведение еще не вышло!')
+        ],
+        verbose_name='Год выпуска'
+    )
+    description = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name='Описание'
+    )
 
     def __str__(self):
         return self.name
 
 
-class Genre_title(models.Model):
+class GenreTitle(models.Model):
     """Модель связи моделей произведения и жанров."""
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.SET_NULL,
-        null=True
+        on_delete=models.CASCADE,
     )
     title = models.ForeignKey(
         Title,
-        on_delete=models.CASCADE,
+        on_delete=models.CASCADE
     )
 
 
@@ -144,7 +161,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.text
+        return self.text[:500]
 
 
 class Comment(models.Model):
@@ -174,4 +191,4 @@ class Comment(models.Model):
         ordering = ['-pub_date']
 
     def __str__(self):
-        return self.text
+        return self.text[:500]
