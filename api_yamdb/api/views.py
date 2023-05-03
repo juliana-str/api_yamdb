@@ -1,33 +1,32 @@
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
-from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import (filters, mixins, permissions,
+                            serializers, status, viewsets)
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly)
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework import (filters, status, permissions, serializers,
-                            mixins, viewsets)
+from reviews.models import Category, Genre, Review, Title, User
 
-from api_yamdb.settings import EMAIL
-
-from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerOnly
 from .filters import TitleFilter
+from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerOnly
 from .serializers import (
     CategorySerializer,
+    CommentSerializer,
     GenreSerializer,
+    ReviewSerializer,
+    SignUpSerializer,
     TitleGetSerializer,
     TitleSerializer,
-    UserSerializer,
-    SignUpSerializer,
     TokenSerializer,
-    ReviewSerializer,
-    CommentSerializer,
+    UserSerializer,
 )
-from reviews.models import Genre, Category, Title, User, Review
 
 
 class UserViewSet(ModelViewSet):
@@ -69,18 +68,18 @@ def signup(request):
         user, created = User.objects.get_or_create(
             username=username, email=email)
         confirmation_code = default_token_generator.make_token(user)
-        send_mail(
-            "Код подтверждения",
-            f"Ваш код подтверждения: {confirmation_code}",
-            EMAIL,
-            [user.email],
-            fail_silently=False,
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
     except IntegrityError:
         raise serializers.ValidationError(
             "Данные имя пользователя или Email уже зарегистрированы"
         )
+    send_mail(
+        "Код подтверждения",
+        f"Ваш код подтверждения: {confirmation_code}",
+        settings.EMAIL,
+        [user.email],
+        fail_silently=False,
+    )
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
