@@ -12,9 +12,9 @@ class Command(BaseCommand):
             os.path.join(
                 settings.BASE_DIR,
                 'static', 'data', 'users.csv',
-                    ),
+            ),
             'r', encoding='utf-8'
-                   ) as f:
+        ) as f:
             reader = csv.reader(f, delimiter=',')
             for row in reader:
                 if not isinstance(row[0], int):

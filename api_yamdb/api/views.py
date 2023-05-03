@@ -1,14 +1,16 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly)
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.viewsets import ModelViewSet
-from rest_framework import filters, status, permissions, serializers
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework import (filters, status, permissions, serializers,
+                            mixins, viewsets)
 
 from api_yamdb.settings import EMAIL
 
@@ -22,8 +24,10 @@ from .serializers import (
     UserSerializer,
     SignUpSerializer,
     TokenSerializer,
+    ReviewSerializer,
+    CommentSerializer,
 )
-from reviews.models import Genre, Category, Title, User
+from reviews.models import Genre, Category, Title, User, Review
 
 
 class UserViewSet(ModelViewSet):
@@ -62,7 +66,8 @@ def signup(request):
     email = serializer.validated_data["email"]
 
     try:
-        user, created = User.objects.get_or_create(username=username, email=email)
+        user, created = User.objects.get_or_create(
+            username=username, email=email)
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
             "Код подтверждения",
@@ -92,43 +97,36 @@ def get_token(request):
     raise serializers.ValidationError("Введен неверный код.")
 
 
-class CategoryViewSet(ModelViewSet):
+class CategoryViewSet(mixins.CreateModelMixin,
+                      mixins.DestroyModelMixin,
+                      mixins.ListModelMixin,
+                      GenericViewSet):
     """Вьюсет для просмотра, создания, удаления категории."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', 'slug')
+    search_fields = ('name',)
     lookup_field = 'slug'
-    http_method_names = ['get', 'post', 'delete']
-
-    def destroy(self, request, *args, **kwargs):
-        category = Category.objects.filter(id=self.kwargs.get('id'))
-        category.delete()
-        if not category:
-            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class GenreViewSet(ModelViewSet):
+class GenreViewSet(mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   GenericViewSet):
     """Вьюсет для просмотра жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', 'slug')
+    search_fields = ('name',)
     lookup_field = 'slug'
-    http_method_names = ['get', 'post', 'delete']
-
-    def destroy(self, request, *args, **kwargs):
-        genre = Genre.objects.filter(id=self.kwargs.get('id'))
-        genre.delete()
-        if not genre:
-            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TitleViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления произведения."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')).order_by('-id')
     Get_serializer_class = TitleGetSerializer
     Title_serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -137,6 +135,42 @@ class TitleViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
-        if self.action == 'get':
+        if self.action in ('list', 'retrieve'):
             return self.Get_serializer_class
         return self.Title_serializer_class
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    """Получение/создание/обновление/удаление
+    отзыва к произведению
+    """
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAuthorOrAdminOrModerOnly,
+                          IsAuthenticatedOrReadOnly)
+
+    def get_queryset(self):
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, title=title)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """Получение/создание/обновление/удаление
+    комментария к отзыву о произведении
+    """
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthorOrAdminOrModerOnly,
+                          IsAuthenticatedOrReadOnly)
+
+    def get_queryset(self):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(Review,
+                                   id=self.kwargs.get('review_id'),
+                                   title__id=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, review=review)
