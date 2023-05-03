@@ -149,12 +149,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
                           IsAuthenticatedOrReadOnly)
 
     def get_queryset(self):
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        title = self.get_title()
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        title = self.get_title()
         serializer.save(author=self.request.user, title=title)
+
+    def get_title(self):
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -170,7 +173,14 @@ class CommentViewSet(viewsets.ModelViewSet):
         return review.comments.all()
 
     def perform_create(self, serializer):
+        title = self.get_title()
         review = get_object_or_404(Review,
                                    id=self.kwargs.get('review_id'),
-                                   title__id=self.kwargs.get('title_id'))
+                                   title=title)
         serializer.save(author=self.request.user, review=review)
+
+    def get_title(self):
+        if hasattr(self, 'title'):
+            return self.title
+        self.title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        return self.title
