@@ -117,7 +117,7 @@ class GenreTitle(models.Model):
     )
     title = models.ForeignKey(
         Title,
-        on_delete=models.CASCADE,
+        on_delete=models.CASCADE
     )
 
 
