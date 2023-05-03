@@ -5,27 +5,28 @@ from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import (filters, mixins, permissions,
-                            serializers, status, viewsets)
+from rest_framework import (filters, status, permissions, serializers,
+                            mixins, viewsets)
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly)
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Genre, Review, Title, User
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
+from reviews.models import Genre, Category, Title, User, Review
 from .filters import TitleFilter
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerOnly
+
 from .serializers import (
     CategorySerializer,
-    CommentSerializer,
     GenreSerializer,
-    ReviewSerializer,
-    SignUpSerializer,
     TitleGetSerializer,
     TitleSerializer,
-    TokenSerializer,
     UserSerializer,
+    SignUpSerializer,
+    TokenSerializer,
+    ReviewSerializer,
+    CommentSerializer,
 )
 
 
@@ -126,8 +127,8 @@ class TitleViewSet(ModelViewSet):
     """Вьюсет для просмотра, создания, удаления произведения."""
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).order_by('-id')
-    Get_serializer_class = TitleGetSerializer
-    Title_serializer_class = TitleSerializer
+    title_get_serializer_class = TitleGetSerializer
+    title_serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -135,8 +136,8 @@ class TitleViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
-            return self.Get_serializer_class
-        return self.Title_serializer_class
+            return self.title_get_serializer_class
+        return self.title_serializer_class
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

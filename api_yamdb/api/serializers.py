@@ -1,6 +1,3 @@
-import datetime
-import re
-
 from rest_framework import serializers
 
 from reviews.models import Category, Comment, Genre, Review, Title, User
@@ -42,13 +39,8 @@ class TokenSerializer(serializers.Serializer):
 class CategorySerializer(serializers.ModelSerializer):
     """Сериалайзер для модели категория."""
 
-    def validate_slug(self, slug):
-        if not re.match(r"^[-a-zA-Z0-9_]+$", slug):
-            raise serializers.ValidationError("Неверный слаг!")
-        return slug
-
     class Meta:
-        fields = ("name", "slug")
+        fields = ('name', 'slug')
         model = Category
 
 
@@ -63,13 +55,8 @@ class CategoryGetField(serializers.SlugRelatedField):
 class GenreSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели жанры."""
 
-    def validate_slug(self, slug):
-        if not re.match(r"^[-a-zA-Z0-9_]+$", slug):
-            raise serializers.ValidationError("Неверный слаг!")
-        return slug
-
     class Meta:
-        fields = ("name", "slug")
+        fields = ('name', 'slug')
         model = Genre
 
 
@@ -82,7 +69,7 @@ class GenreGetField(serializers.SlugRelatedField):
 
 
 class TitleGetSerializer(serializers.ModelSerializer):
-    """Сериалайзер для модели произведения."""
+    """Сериалайзер для модели произведения(только чтение)."""
 
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
@@ -90,61 +77,59 @@ class TitleGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ["id", "name", "year", "rating", "description", "genre", "category"]
+        fields = [
+            'id', 'name', 'year', 'rating',
+            'description', 'genre', 'category'
+        ]
+        read_only_fields = fields
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    category = CategoryGetField(slug_field="slug", queryset=Category.objects.all())
-    genre = GenreGetField(slug_field="slug", queryset=Genre.objects.all(), many=True)
+    """Сериалайзер для модели произведения."""
 
-    def validate_year(self, year):
-        """Проверка года выпуска произведения."""
-        date = datetime.date.today().strftime("%Y")
-        if year > int(date):
-            raise serializers.ValidationError("Произведение еще не вышло!")
-        return year
+    category = CategoryGetField(
+        slug_field='slug', queryset=Category.objects.all()
+    )
+    genre = GenreGetField(
+        slug_field='slug', queryset=Genre.objects.all(), many=True
+    )
 
     class Meta:
-        fields = "__all__"
+        fields = '__all__'
         model = Title
-        validators = (
-            serializers.UniqueTogetherValidator(
-                queryset=Category.objects.all(),
-                fields=("category", "name"),
-                message="У произведения может быть только одна категория!",
-            ),
-        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(slug_field="username", read_only=True)
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
 
     class Meta:
         model = Review
-        exclude = ["title"]
+        exclude = ['title']
         read_only_fields = (
-            "id",
-            "author",
-            "pub_date",
+            'id', 'author', 'pub_date',
         )
 
     def validate(self, data):
-        if self.context["request"].method == "POST":
-            user = self.context["request"].user
-            title_id = self.context["view"].kwargs.get("title_id")
+        if self.context['request'].method == 'POST':
+            user = self.context['request'].user
+            title_id = self.context['view'].kwargs.get('title_id')
             if Review.objects.filter(author=user, title_id=title_id).exists():
-                raise serializers.ValidationError("Вы уже оставили отзыв.")
+                raise serializers.ValidationError('Вы уже оставили отзыв.')
         return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(slug_field="username", read_only=True)
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
 
     class Meta:
         model = Comment
-        exclude = ["review"]
+        exclude = ['review']
         read_only_fields = (
-            "id",
-            "author",
-            "pub_date",
+            'id', 'author', 'pub_date',
         )

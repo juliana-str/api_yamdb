@@ -1,3 +1,5 @@
+import datetime
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -80,28 +82,38 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='category',
+        verbose_name='Категория'
     )
     genre = models.ManyToManyField(
         Genre,
-        through='Genre_title',
-        related_name='titles'
+        through='GenreTitle',
+        related_name='titles',
+        verbose_name='Жанр'
     )
-    name = models.CharField(max_length=256)
-    year = models.IntegerField()
-    description = models.CharField(max_length=200,
-                                   null=True,
-                                   blank=True)
+    name = models.CharField(max_length=256, verbose_name='Произведение')
+    year = models.PositiveSmallIntegerField(
+        validators=[
+            MaxValueValidator
+            (datetime.datetime.now().strftime("%Y"),
+                'Произведение еще не вышло!')
+        ],
+        verbose_name='Год выпуска'
+    )
+    description = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name='Описание'
+    )
 
     def __str__(self):
         return self.name
 
 
-class Genre_title(models.Model):
+class GenreTitle(models.Model):
     """Модель связи моделей произведения и жанров."""
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.SET_NULL,
-        null=True
+        on_delete=models.CASCADE,
     )
     title = models.ForeignKey(
         Title,
