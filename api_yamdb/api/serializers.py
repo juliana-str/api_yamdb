@@ -31,7 +31,6 @@ class SignUpSerializer(serializers.Serializer):
 
 class TokenSerializer(serializers.Serializer):
     """Сериализатор объектов типа User при получении токена."""
-
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
 
@@ -70,7 +69,6 @@ class GenreGetField(serializers.SlugRelatedField):
 
 class TitleGetSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели произведения(только чтение)."""
-
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.IntegerField()
@@ -86,7 +84,6 @@ class TitleGetSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели произведения."""
-
     category = CategoryGetField(
         slug_field='slug', queryset=Category.objects.all()
     )
