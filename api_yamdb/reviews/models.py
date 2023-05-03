@@ -93,9 +93,9 @@ class Title(models.Model):
     name = models.CharField(max_length=256, verbose_name='Произведение')
     year = models.PositiveSmallIntegerField(
         validators=[
-                MaxValueValidator
-                (datetime.datetime.now().strftime("%Y"),
-                 'Произведение еще не вышло!')
+            MaxValueValidator
+            (datetime.datetime.now().strftime("%Y"),
+                'Произведение еще не вышло!')
         ],
         verbose_name='Год выпуска'
     )
