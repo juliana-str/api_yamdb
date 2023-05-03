@@ -18,16 +18,12 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ('get_genres', 'get_categories', )
+    list_display = ('get_genres', 'category', 'name', 'year', 'description')
 
     def get_genres(self, obj):
         return ', '.join([str(genre) for genre in obj.genre.all()])
 
-    def get_categories(self, obj):
-        return ', '.join([str(category) for category in obj.category.all()])
-
     get_genres.short_description = 'genres'
-    get_categories.short_description = 'categories'
 
 
 admin.site.register(Comment)
