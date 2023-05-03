@@ -3,7 +3,7 @@ import os
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from reviews.models import Genre_title
+from reviews.models import GenreTitle
 
 
 class Command(BaseCommand):
@@ -19,7 +19,7 @@ class Command(BaseCommand):
             for row in reader:
                 if row[0] == 'id':
                     continue
-                Genre_title.objects.get_or_create(
+                GenreTitle.objects.get_or_create(
                     id=row[0],
                     title_id=row[1],
                     genre_id=row[2],

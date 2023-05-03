@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
@@ -82,24 +82,27 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='category',
+        verbose_name='Категория'
     )
     genre = models.ManyToManyField(
         Genre,
-        through='Genre_title',
-        related_name='titles'
+        through='GenreTitle',
+        related_name='titles',
+        verbose_name='Жанр'
     )
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=256, verbose_name='Произведение')
     year = models.PositiveSmallIntegerField(
         validators=[
                 MaxValueValidator
-                (datetime.date.today().strftime("%Y"),
+                (datetime.datetime.now().strftime("%Y"),
                  'Произведение еще не вышло!')
-        ]
+        ],
+        verbose_name='Год выпуска'
     )
     description = models.TextField(
-        max_length=200,
         null=True,
-        blank=True
+        blank=True,
+        verbose_name='Описание'
     )
 
     def __str__(self):
