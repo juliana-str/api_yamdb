@@ -105,9 +105,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         exclude = ['title']
-        read_only_fields = (
-            'id', 'author', 'pub_date',
-        )
 
     def validate(self, data):
         if self.context['request'].method == 'POST':
@@ -127,6 +124,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         exclude = ['review']
-        read_only_fields = (
-            'id', 'author', 'pub_date',
-        )
