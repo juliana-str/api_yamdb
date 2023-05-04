@@ -149,15 +149,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
                           IsAuthenticatedOrReadOnly)
 
     def get_queryset(self):
-        title = self.get_title()
-        return title.reviews.all()
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
-        title = self.get_title()
-        serializer.save(author=self.request.user, title=title)
+        serializer.save(author=self.request.user, title=self.get_title())
 
     def get_title(self):
-        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        if hasattr(self, 'title'):
+            return self.title
+        self.title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        return self.title
 
 
 class CommentViewSet(viewsets.ModelViewSet):
