@@ -1,10 +1,8 @@
-import datetime
-
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from .validators import validate_username
+from .validators import validate_username, validate_year
 
 USER = 'user'
 MODER = 'moderator'
@@ -90,13 +88,12 @@ class Title(models.Model):
         related_name='titles',
         verbose_name='Жанр'
     )
-    name = models.CharField(max_length=256, verbose_name='Произведение')
+    name = models.CharField(
+        max_length=256,
+        verbose_name='Произведение'
+    )
     year = models.PositiveSmallIntegerField(
-        validators=[
-            MaxValueValidator
-            (int(datetime.datetime.now().strftime("%Y")),
-                'Произведение еще не вышло!')
-        ],
+        validators=[validate_year],
         verbose_name='Год выпуска'
     )
     description = models.TextField(
