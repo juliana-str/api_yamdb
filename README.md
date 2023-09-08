@@ -102,3 +102,12 @@ python3 manage.py read_files
 ```
 
 4. При отправке запроcов передать токен в заголовке Authorization: Bearer <токен>.
+
+---
+## 6. Об авторе <a id=6></a>
+
+Стрельникова Юлиана Сергеевна  
+Python-разработчик (Backend)  
+Россия, г. Санкт-Петербург
+E-mail: julianka.str@yandex.ru  
+Telegram: @JulianaStr
